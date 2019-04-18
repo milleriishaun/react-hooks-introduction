@@ -1,31 +1,38 @@
-export const useHttp = () => {
+import { useState, useEffect } from 'react';
+
+export const useHttp = (url, dependencies) => {
 
   const [ isLoading, setIsLoading ] = useState(false);
+  const [ fetchedData, setFetchedData ] = useState(null);
 
-  fetch('https://swapi.co/api/people/' + props.selectedChar)
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Could not fetch person!');
-    }
-    return response.json();
-  })
-  .then(charData => {
-    const loadedCharacter = {
-      id: props.selectedChar,
-      name: charData.name,
-      height: charData.height,
-      colors: {
-        hair: charData.hair_color,
-        skin: charData.skin_color
-      },
-      gender: charData.gender,
-      movieCount: charData.films.length
-    };
-    setLoadedCharacter(loadedCharacter);
-    setIsLoading(false);
-  })
-  .catch(err => {
-    console.log(err);
-    setIsLoading(false);
-  });
+  useEffect(() => {
+    setIsLoading(true);
+    console.log('sending HTTP request to url: ' + url);
+    // fetch('https://swapi.co/api/people')
+    fetch(url, dependencies)
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch.');
+        }
+        return response.json();
+      })
+      .then(data => {
+        // const selectedCharacters = charData.results.slice(0, 5);
+
+        // setIsLoading(false);
+        // setLoadedChars(
+        //   selectedCharacters.map((char, index) => ({
+        //   name: char.name,
+        //   id: index + 1
+        //   }))
+        // );
+        setIsLoading(false);
+        setFetchedData(data);
+      })
+      .catch(err => {
+        console.log(err);
+        setIsLoading(false);
+      });
+    }, dependencies);
+  return [isLoading, fetchedData];
 };

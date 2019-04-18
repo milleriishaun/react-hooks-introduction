@@ -1,27 +1,28 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
+
+import { useHttp } from '../hooks/http';
 
 import Summary from './Summary';
 
 const Character = props => {
-  const [ loadedCharacter, setLoadedCharacter ] = useState({});
-  const [ isLoading, setIsLoading ] = useState(false);
 
-  console.log('Renndering...');
+  const [ isLoading, fetchedData ] =useHttp('https://swapi.co/api/people/' + props.selectedChar, [props.selectedChar]);
 
-  const fetchData = () => {
-    console.log(
-      'Sending Http request for new character with id ' +
-        props.selectedChar
-    );
-    setIsLoading(true);
-  };
+  let loadedCharacter = null;
 
-  useEffect(() => {
-    fetchData();
-    return () => {
-      console.log('cleaning up...');
+  if (fetchedData) {
+    loadedCharacter = {
+      id: props.selectedChar,
+      name: fetchedData.name,
+      height: fetchedData.height,
+      colors: {
+        hair: fetchedData.hair_color,
+        skin: fetchedData.skin_color
+      },
+      gender: fetchedData.gender,
+      movieCount: fetchedData.films.length
     };
-  }, [props.selectedChar]);
+  }
 
   useEffect(() => {
     return () => {
@@ -32,7 +33,7 @@ const Character = props => {
 
   let content = <p>Loading Character...</p>;
 
-  if (!isLoading && loadedCharacter.id) {
+  if (!isLoading && loadedCharacter) {
     content = (
       <Summary
         name={loadedCharacter.name}
@@ -43,7 +44,7 @@ const Character = props => {
         movieCount={loadedCharacter.movieCount}
       />
     );
-  } else if (!isLoading && !loadedCharacter.id) {
+  } else if (!isLoading && !loadedCharacter) {
     content = <p>Failed to fetch character.</p>;
   }
   return content;
